@@ -1,0 +1,19 @@
+#This code is to call LLM multiple times and pass query, its response back to LLM an let LLM evaluate the answer
+import os
+from pyexpat import model
+from typing import override
+from openai import OpenAI
+from dotenv import load_dotenv
+load_dotenv(override=True)
+GEMINI_BASE_URL= "https://generativelanguage.googleapis.com/v1beta/openai/"
+google_api_key = os.getenv("GOOGLE_API_KEY")
+gemini = OpenAI(base_url=GEMINI_BASE_URL,api_key=google_api_key)
+question = "You are an insurance expert and generate one simple quiz question for health insurance with option a,b,c,d"
+response = gemini.chat.completions.create(model="gemini-2.5-flash", messages = [{"role":"user","content": question}])
+print(response.choices[0].message.content)
+modelanswer="Answer to the question"  + response.choices[0].message.content +"by selecting one of the options as a layman who doesnt know insurance"
+response1 = gemini.chat.completions.create(model="gemini-2.5-flash", messages = [{"role":"user","content": modelanswer}])
+print(response1.choices[0].message.content)
+checkresponse = "Confirm if the response provided by the user"+ response1.choices[0].message.content+" is correct to the question which was asked earlier as MCQ. If yes, say you are right else give the correct answer."
+response = gemini.chat.completions.create(model="gemini-2.5-flash", messages = [{"role":"user","content": checkresponse + response1.choices[0].message.content}])
+print(response.choices[0].message.content)
